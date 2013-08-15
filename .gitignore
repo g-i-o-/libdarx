@@ -1,0 +1,6 @@
+# Ignore object files
+*.o
+# Ignore static archives
+*.a
+# Ignore shared objects
+*.so
