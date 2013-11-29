@@ -39,7 +39,7 @@ libdarx_la_LDFLAGS = -version-info $(LIBDARX_SO_VERSION)
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
 darx_includedir = $(includedir)/darx
-nobase_darx_include_HEADERS = darx.h endian.h
+nobase_darx_include_HEADERS = darx.h
 
 ## The generated configuration header is installed in its own subdirectory of
 ## $(libdir).  The reason for this is that the configuration information put
