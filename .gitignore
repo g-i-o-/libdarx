@@ -5,4 +5,8 @@
 # Ignore shared objects
 *.so
 
+aclocal.m4
+
+autom4te.cache
+
 .DS_Store
