@@ -80,10 +80,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">libdarx Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-</div><!-- contents -->
+<div class="textblock"><p>Library for reading and writing darx files.</p>
+<p>A darx (short for data archive) file is a set of data tensors, associated with some archive metadata.</p>
+<p>Each tensor specifies it's own dimensions and datatype. The purpose of such a file is to store associated data of any type into one single archive.</p>
+<p>Each tensor's data can be compressed individually, allowing the header to still be read.</p>
+<p>Also, the format provides built in support for tensors holding mixed and custom data types.</p>
+<p>The mixed data type specifies elements as a tuple of elements, each with it's own recursively defined data type, whereas the custom data type specifies an application-dependent formatting of the data.</p>
+<p>Originally created to support bundling of related matrices in one convenient, portable, file. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Nov 29 2013 17:14:37 for libdarx by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Nov 29 2013 17:53:47 for libdarx by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
