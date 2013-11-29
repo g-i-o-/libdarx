@@ -10,35 +10,35 @@ AUTOMAKE_OPTIONS = subdir-objects
 ## to provide a way for the user to supply additional arguments.
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
-## Define a libtool archive target "libdarx-@LIBDARX_API_VERSION@.la", with
+## Define a libtool archive target "libdarx.la", with
 ## @LIBDARX_API_VERSION@ substituted into the generated Makefile at configure
 ## time.
 ## The libtool archive file (.la) will be installed into the directory named
 ## by the predefined variable $(bindir), along with the actual shared library
 ## file (.so).
-lib_LTLIBRARIES = libdarx-@LIBDARX_API_VERSION@.la
+lib_LTLIBRARIES = libdarx.la
 
-## Define the source file list for the "libdarx-@LIBDARX_API_VERSION@.la"
-## target.  Note that @LIBDARX_API_VERSION@ is not interpreted by Automake and
+## Define the source file list for the "libdarx.la"
+## target.  Note that is not interpreted by Automake and
 ## will therefore be treated as if it were literally part of the target name,
 ## and the variable name derived from that.
 ## The file extension .cc is recognized by Automake, and makes it produce
 ## rules which invoke the C++ compiler to produce a libtool object file (.lo)
 ## from each source file.  Note that it is not necessary to list header files
 ## which are already listed elsewhere in a _HEADERS variable assignment.
-libdarx_@LIBDARX_API_VERSION@_la_SOURCES = darx.cpp
+libdarx_la_SOURCES = darx.cpp
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
 ## that all version information is kept in one place.
-libdarx_@LIBDARX_API_VERSION@_la_LDFLAGS = -version-info $(LIBDARX_SO_VERSION)
+libdarx_la_LDFLAGS = -version-info $(LIBDARX_SO_VERSION)
 
 ## Define the list of public header files and their install location.  The
 ## nobase_ prefix instructs Automake to not strip the directory part from each
 ## filename, in order to avoid the need to define separate file lists for each
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
-darx_includedir = $(includedir)/darx-$(LIBDARX_API_VERSION)
+darx_includedir = $(includedir)/darx
 nobase_darx_include_HEADERS = darx.h endian.h
 
 ## The generated configuration header is installed in its own subdirectory of
@@ -52,7 +52,7 @@ nobase_darx_include_HEADERS = darx.h endian.h
 ## in _HEADERS variables are normally included in the distribution, but the
 ## configuration header file is generated at configure time and should not be
 ## shipped with the source tarball.
-darx_libincludedir = $(libdir)/darx-$(LIBDARX_API_VERSION)/include
+darx_libincludedir = $(libdir)/darx/include
 nodist_darx_libinclude_HEADERS = darxconfig.h
 
 ## Install the generated pkg-config file (.pc) into the expected location for
