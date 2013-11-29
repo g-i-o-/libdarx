@@ -5,8 +5,28 @@
 # Ignore shared objects
 *.so
 
+# Ignore autotool files
 aclocal.m4
-
 autom4te.cache
+*.lo
+*.la
+*.pc
+.deps/
+.libs/
+Makefile.in
+config.guess
+config.h
+config.log
+config.status
+config.sub
+*config.h
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
+stamp-h2
 
+# Ignore stupid mac indexing file
 .DS_Store
