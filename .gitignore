@@ -27,6 +27,7 @@ ltmain.sh
 missing
 stamp-h1
 stamp-h2
+INSTALL
 
 # Ignore stupid mac indexing file
 .DS_Store
