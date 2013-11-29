@@ -1,6 +1,4 @@
 #include "darx.h"
-#include "string.h"
-#include "endian.h"
 #include <iostream>
 #include <assert.h>
 
@@ -12,6 +10,7 @@
 
 namespace darx{
 	int VERBOSE;
+	CustomElementTypeStruct UNKNOWN_TYPE(TYPE_CUSTOM, 1, 8, "unknown");
 	
 	const char* errors[]={
 		"success", "unsupported element type", "unsuported compression type",
