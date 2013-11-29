@@ -4,3 +4,5 @@
 *.a
 # Ignore shared objects
 *.so
+
+.DS_Store
