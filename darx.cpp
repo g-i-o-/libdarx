@@ -11,6 +11,8 @@
 #define DARX_MAGIC_BE 0x4c495645
 
 namespace darx{
+	int VERBOSE;
+	
 	const char* errors[]={
 		"success", "unsupported element type", "unsuported compression type",
 		"invalid structure"
@@ -49,11 +51,11 @@ namespace darx{
 			return false;
 		}
 		uint8_t ttt = (uint8_t)tensor_type->type;
-std::cout << "#    element type : " << ((int)ttt) << std::endl;
+if(VERBOSE){ std::cout << "#    element type : " << ((int)ttt) << std::endl; }
 		fwrite(&ttt, sizeof(uint8_t), 1, file);
-std::cout << "#       comps : " << ((int)tensor_type->components) << std::endl;
+if(VERBOSE){ std::cout << "#       comps : " << ((int)tensor_type->components) << std::endl; }
 		fwrite(&(tensor_type->components), sizeof(uint8_t), 1, file);
-std::cout << "#       bitwidth : " << ((int)tensor_type->bit_width) << std::endl;
+if(VERBOSE){ std::cout << "#       bitwidth : " << ((int)tensor_type->bit_width) << std::endl; }
 		fwrite(&(tensor_type->bit_width ), sizeof(uint8_t), 1, file);
 		switch(tensor_type->type){
 			case TYPE_INT: case TYPE_UINT: case TYPE_FLOAT: case TYPE_CHAR:
@@ -74,17 +76,18 @@ std::cout << "#       bitwidth : " << ((int)tensor_type->bit_width) << std::endl
 			} break;
 			default:
 				return UNSUPPORTED_ELEMENT_TYPE;
-		}		
+		}
+		return true;
 	}
 	
 	ElementTypeStruct* read_tensor_type(darx& darx, FILE* file, data_type_info& dtinfo){
 		uint8_t tensor_type_tag, components, bit_width;
 		fread(&tensor_type_tag, sizeof(uint8_t), 1, file);
-std::cout << "#    element type : " << ((int)tensor_type_tag) << std::endl;
+if(VERBOSE){ std::cout << "#    element type : " << ((int)tensor_type_tag) << std::endl; }
 		fread(&(components), sizeof(uint8_t), 1, file);
-std::cout << "#       comps : " << ((int)components) << std::endl;
+if(VERBOSE){ std::cout << "#       comps : " << ((int)components) << std::endl; }
 		fread(&(bit_width ), sizeof(uint8_t), 1, file);
-std::cout << "#       bitwidth : " << ((int)bit_width) << std::endl;
+if(VERBOSE){ std::cout << "#       bitwidth : " << ((int)bit_width) << std::endl; }
 		switch(tensor_type_tag){
 			case TYPE_INT: case TYPE_UINT: case TYPE_FLOAT: case TYPE_CHAR:
 				return new ElementTypeStruct((ElementType)tensor_type_tag, components, bit_width);
@@ -106,6 +109,7 @@ std::cout << "#       bitwidth : " << ((int)bit_width) << std::endl;
 				CustomElementTypeStruct* customtype = new CustomElementTypeStruct(
 					(ElementType)tensor_type_tag, components, bit_width, type_name
 				);
+				return customtype;
 			} break;
 			default:
 				return 0;
@@ -120,14 +124,14 @@ std::cout << "#       bitwidth : " << ((int)bit_width) << std::endl;
 		uint8_t namelen = tensor.name ? strlen(tensor.name) : 0;
 		fwrite(&namelen, sizeof(uint8_t), 1, file);
 		if(tensor.name){
-std::cout << "#    name : " << tensor.name << std::endl;
+if(VERBOSE){ std::cout << "#    name : " << tensor.name << std::endl; }
 			fwrite(tensor.name, sizeof(char), namelen, file);
 		}
 		// write the tensor's rank
-std::cout << "#    rank : " << ((int)tensor.rank) << std::endl;
+if(VERBOSE){ std::cout << "#    rank : " << ((int)tensor.rank) << std::endl; }
 		fwrite(&(tensor.rank), sizeof(uint8_t), 1, file);
 		// write the length of each dimmension 
-std::cout << "#    lengths : "; for(int i=0; i < tensor.rank; i++){ std::cout << tensor.lengths[i] << "   "; } std::cout << std::endl;
+if(VERBOSE){ std::cout << "#    lengths : "; for(int i=0; i < tensor.rank; i++){ std::cout << tensor.lengths[i] << "   "; } std::cout << std::endl; }
 		fwrite(tensor.lengths, sizeof(unsigned int), tensor.rank, file);
 		// write the element type stuct
 		if(!write_tensor_type(tensor.type, file)){
@@ -142,17 +146,17 @@ std::cout << "#    lengths : "; for(int i=0; i < tensor.rank; i++){ std::cout <<
 				return INVALID_STRUCT;
 			}
 			if(!compress_data(tensor, &cdata, &cdata_length, &cdata_is_temp)){
-std::cout << "#    cdata size:  " << cdata_length << std::endl;
+if(VERBOSE){ std::cout << "#    cdata size:  " << cdata_length << std::endl; }
 				return UNSUPPORTED_COMPRESS_TYPE;
 			}
 			uint8_t ctype = (uint8_t)tensor.compression;
 			fwrite(&ctype, sizeof(uint8_t), 1, file);
-std::cout << "#    cdata size:  " << cdata_length << std::endl;
+if(VERBOSE){ std::cout << "#    cdata size:  " << cdata_length << std::endl; }
 			fwrite(&cdata_length, sizeof(unsigned int), 1, file);
-std::cout << "#    cdata :  " << ((void*)cdata) << std::endl;
+if(VERBOSE){ std::cout << "#    cdata :  " << ((void*)cdata) << std::endl; }
 			fwrite(cdata, cdata_length, 1, file);
 			if(cdata_is_temp){
-std::cout << "#    deleting temp cdata...  " << cdata << std::endl;
+if(VERBOSE){ std::cout << "#    deleting temp cdata...  " << cdata << std::endl; }
 				delete[] cdata;
 			}
 		}
@@ -162,7 +166,7 @@ std::cout << "#    deleting temp cdata...  " << cdata << std::endl;
 	bool compress_data(datatensor& tensor, uint8_t** cdata, unsigned int* cdata_len, bool* cdata_is_temp){
 		CompressionType compression = tensor.compression;
 		if(compression == UNCOMPRESSED){
-std::cout << "#    [no compression] " << std::endl;
+if(VERBOSE){ std::cout << "#    [no compression] " << std::endl; }
 			(*cdata) = (uint8_t*)tensor.data;
 			(*cdata_len) = tensor.data_size;
 			(*cdata_is_temp) = false;
@@ -174,7 +178,7 @@ std::cout << "#    [no compression] " << std::endl;
 	bool decompress_data(datatensor& tensor, uint8_t** cdata, unsigned int* cdata_len, bool* cdata_is_temp){
 		CompressionType compression = tensor.compression;
 		if(compression == UNCOMPRESSED){
-std::cout << "#    [no compression] " << std::endl;
+if(VERBOSE){ std::cout << "#    [no compression] " << std::endl; }
 			tensor.data = (*cdata);
 			tensor.data_size = (*cdata_len);
 			(*cdata_is_temp) = false;
@@ -190,7 +194,7 @@ std::cout << "#    [no compression] " << std::endl;
 	 * 	false otherwise.
 	 */
 	bool read_tensor(datatensor& tensor, darx& darx, FILE* file, data_type_info& dtinfo){
-std::cout << "# file pos:  " << ftell(file) << std::endl;
+if(VERBOSE){ std::cout << "# file pos:  " << ftell(file) << std::endl; }
 		uint8_t namelen=0;
 		fread(&namelen, sizeof(uint8_t), 1, file);
 		if(namelen > 0){
@@ -198,22 +202,22 @@ std::cout << "# file pos:  " << ftell(file) << std::endl;
 			tensor.name=tensor_name;
 			fread(tensor_name, sizeof(uint8_t), namelen, file);
 			tensor_name[namelen]=0;
-std::cout << "#    name : " << tensor.name << std::endl;
+if(VERBOSE){ std::cout << "#    name : " << tensor.name << std::endl; }
 		} else {
-std::cout << "#    (unnamed)" << std::endl;
+if(VERBOSE){ std::cout << "#    (unnamed)" << std::endl; }
 		}
 		// write the tensor's rank
 		fread(&(tensor.rank), sizeof(uint8_t), 1, file);
-std::cout << "#    rank : " << ((int)tensor.rank) << std::endl;
+if(VERBOSE){ std::cout << "#    rank : " << ((int)tensor.rank) << std::endl; }
 		// write the length of each dimmension
 		tensor.lengths = new unsigned int[tensor.rank];
-std::cout << "#    lengths : ";
+if(VERBOSE){ std::cout << "#    lengths : "; }
 		for(int dim_idx=0; dim_idx < tensor.rank; dim_idx++){
 			tensor.lengths[dim_idx]=0;
 			fread(&(tensor.lengths[dim_idx]), dtinfo.int_size, 1, file);
-			std::cout << tensor.lengths[dim_idx] << "   ";
+			if(VERBOSE){ std::cout << tensor.lengths[dim_idx] << "   "; }
 		}
-std::cout << std::endl;
+if(VERBOSE){ std::cout << std::endl; }
 		// write the element type stuct
 		tensor.type = read_tensor_type(darx, file, dtinfo);
 		if(!tensor.type){
@@ -224,19 +228,19 @@ std::cout << std::endl;
 			uint8_t ctype;
 			fread(&ctype, sizeof(uint8_t), 1, file);
 			tensor.compression = (CompressionType)ctype;
-std::cout << "#    compression :  " << ((int)ctype) << std::endl;
+if(VERBOSE){ std::cout << "#    compression :  " << ((int)ctype) << std::endl; }
 			bool cdata_is_temp=false;
 			unsigned int cdata_length;
 			fread(&cdata_length, sizeof(unsigned int), 1, file);
-std::cout << "#    cdata size:  " << cdata_length << std::endl;
+if(VERBOSE){ std::cout << "#    cdata size:  " << cdata_length << std::endl; }
 			uint8_t* cdata = new uint8_t[cdata_length];
 			fread(cdata, cdata_length, 1, file);
-std::cout << "#    cdata :  " << ((void*)cdata) << std::endl;
+if(VERBOSE){ std::cout << "#    cdata :  " << ((void*)cdata) << std::endl; }
 			if(!decompress_data(tensor, &cdata, &cdata_length, &cdata_is_temp)){
 				return UNSUPPORTED_COMPRESS_TYPE;
 			}
 			if(cdata_is_temp){
-std::cout << "#    deleting temp cdata...  " << cdata << std::endl;
+if(VERBOSE){ std::cout << "#    deleting temp cdata...  " << cdata << std::endl; }
 				delete[] cdata;
 			}
 		}
@@ -264,8 +268,8 @@ std::cout << "#    deleting temp cdata...  " << cdata << std::endl;
 		char magic[DARX_MAGIC_LEN+1];
 		fread(magic, sizeof(char), DARX_MAGIC_LEN, file);
 		magic[DARX_MAGIC_LEN] = 0;
-std::cout << "# read magic number : '" << magic << "' == " << DARX_MAGIC << std::endl;
-std::cout << "#     " << magic[0] << magic[1] << magic[2] << magic[3] << std::endl;
+if(VERBOSE){ std::cout << "# read magic number : '" << magic << "' == " << DARX_MAGIC << std::endl; }
+if(VERBOSE){ std::cout << "#     " << magic[0] << magic[1] << magic[2] << magic[3] << std::endl; }
 		if(strncmp(magic, DARX_MAGIC, DARX_MAGIC_LEN)){
 			return INVALID_STRUCT;
 		}
@@ -273,46 +277,46 @@ std::cout << "#     " << magic[0] << magic[1] << magic[2] << magic[3] << std::en
 		fread(&magic2, sizeof(char), 4, file);
 		bool storedAsBE = ( magic2[3] ==  ((uint8_t)( DARX_MAGIC_BE&0xff)));
 		darx.isBigEndian = storedAsBE;
-std::cout << "# file endianness ["<<magic2[3]<<" == " << ((uint8_t)(DARX_MAGIC_BE&0xff)) << "]: " << (storedAsBE ? "big" : "little") << std::endl;
+if(VERBOSE){ std::cout << "# file endianness ["<<magic2[3]<<" == " << ((uint8_t)(DARX_MAGIC_BE&0xff)) << "]: " << (storedAsBE ? "big" : "little") << std::endl; }
 		int endianness_i = 0x00010203;
 		bool systemIsBE = ( ((char*)&endianness_i)[0] ==  0x00);
-std::cout << "# system endianness : " << (systemIsBE ? "big" : "little") << std::endl;
+if(VERBOSE){ std::cout << "# system endianness : " << (systemIsBE ? "big" : "little") << std::endl; }
 		
 		dtinfo.swapEndian = (systemIsBE == storedAsBE);
 		if(dtinfo.swapEndian){
-std::cout << "# need to swap endianness.." << std::endl;
+if(VERBOSE){ std::cout << "# need to swap endianness.." << std::endl; }
 		}
 		fread(&dtinfo.int_size, sizeof(uint8_t), 1, file);
 		fread(&dtinfo.long_size, sizeof(uint8_t), 1, file);
 		
-std::cout << "# data sizes [int:" << ((int)dtinfo.int_size) << ", long:" << ((long)dtinfo.long_size) << "]" << std::endl;
+if(VERBOSE){ std::cout << "# data sizes [int:" << ((int)dtinfo.int_size) << ", long:" << ((long)dtinfo.long_size) << "]" << std::endl; }
 		fread(&darx.number_of_tensors, sizeof(uint16_t), 1, file);
-std::cout << "# tensors : " << darx.number_of_tensors << std::endl;
+if(VERBOSE){ std::cout << "# tensors : " << darx.number_of_tensors << std::endl; }
 		long int *tensor_indices  = new long int[darx.number_of_tensors];
 		assert(sizeof(long int) >= dtinfo.long_size);
-std::cout << "#  tensor file locations : [";
+if(VERBOSE){ std::cout << "#  tensor file locations : ["; }
 		for(int i=0; i < darx.number_of_tensors; i++){
 			fread(&(tensor_indices[i]), dtinfo.long_size, 1, file);
-std::cout << tensor_indices[i] << "   ";
+if(VERBOSE){ std::cout << tensor_indices[i] << "   "; }
 		}
-std::cout << "]" << std::endl;
+if(VERBOSE){ std::cout << "]" << std::endl; }
 		fread(&darx.metadata_size, sizeof(uint16_t), 1, file);
 		if(darx.metadata_size > 0){
-std::cout << "# metadata size:" << darx.metadata_size << std::endl;
+if(VERBOSE){ std::cout << "# metadata size:" << darx.metadata_size << std::endl; }
 			darx.metadata = new char[darx.metadata_size];
 			fread(&darx.metadata, 1, darx.metadata_size, file);
 		} else {
-std::cout << "# no metadata (size:0)." << std::endl;
+if(VERBOSE){ std::cout << "# no metadata (size:0)." << std::endl; }
 			darx.metadata = 0;
 		}
-std::cout << "# readin tensors ("<< darx.number_of_tensors <<")." << std::endl;
+if(VERBOSE){ std::cout << "# readin tensors ("<< darx.number_of_tensors <<")." << std::endl; }
 		darx.tensors = new datatensor[darx.number_of_tensors];
 		for(int tensor_idx=0; tensor_idx < darx.number_of_tensors; tensor_idx++){
 			fseek(file, tensor_indices[tensor_idx], SEEK_SET);
 			read_tensor(darx.tensors[tensor_idx], darx, file, dtinfo);
 		}
 		
-std::cout << "# darx file read successfully." << std::endl;
+if(VERBOSE){ std::cout << "# darx file read successfully." << std::endl; }
 		delete[] tensor_indices;
 		return SUCCESS;
 	}
@@ -332,36 +336,36 @@ std::cout << "# darx file read successfully." << std::endl;
 		
 		// store magic number
 		const char* magic = DARX_MAGIC;
-std::cout << "# image magic number : " << magic << std::endl;
+if(VERBOSE){ std::cout << "# image magic number : " << magic << std::endl; }
 		fwrite(magic, sizeof(char), DARX_MAGIC_LEN, file);
 		// store an endianness test in the file: 
 		uint32_t int_magic2 = DARX_MAGIC_BE; // "LIVE" in hex
-std::cout << "# image magic number, endianed : " << int_magic2 << std::endl;
+if(VERBOSE){ std::cout << "# image magic number, endianed : " << int_magic2 << std::endl; }
 		fwrite(&int_magic2, sizeof(uint32_t), 1, file);
 		// write the size of an integer (in an 8-bit int)
 		uint8_t int_size = sizeof(unsigned int);
-std::cout << "# int size : " << int_size << std::endl;
+if(VERBOSE){ std::cout << "# int size : " << int_size << std::endl; }
 		fwrite(&int_size, sizeof(uint8_t), 1, file);
 		// write the size of a long int (in a 8-bit int)
 		uint8_t long_size = sizeof(long int);
-std::cout << "# long size : " << long_size << std::endl;
+if(VERBOSE){ std::cout << "# long size : " << long_size << std::endl; }
 		fwrite(&long_size, sizeof(uint8_t), 1, file);
 		// count how many tensors we were given, and store the number
-std::cout << "# tensors : " << darx.number_of_tensors << std::endl;
+if(VERBOSE){ std::cout << "# tensors : " << darx.number_of_tensors << std::endl; }
 		fwrite(&darx.number_of_tensors, sizeof(uint16_t), 1, file);
 		// record the file offset of the archive's tensor index.
 		long int tensors_index_pos = ftell(file);
 		// leave a space in the file for the tensors index
-std::cout << "# tensors index filepos : " << tensors_index_pos << std::endl;
+if(VERBOSE){ std::cout << "# tensors index filepos : " << tensors_index_pos << std::endl; }
 		fseek(file, darx.number_of_tensors * sizeof(long int), SEEK_CUR);
 		// write out any metadata that may be added to the file
-std::cout << "# metadata : " << ((void*)darx.metadata) << "(size : " << darx.metadata_size << ")" << std::endl;
+if(VERBOSE){ std::cout << "# metadata : " << ((void*)darx.metadata) << "(size : " << darx.metadata_size << ")" << std::endl; }
 		fwrite(&darx.metadata_size, sizeof(uint16_t), 1, file);
 		fwrite(darx.metadata, 1, darx.metadata_size, file);
 		// write the tensors to the file, one by one
 		for(int tensor_idx=0; tensor_idx < darx.number_of_tensors; tensor_idx++){
 			long int tensor_pos = ftell(file);
-std::cout << "# tensor["<<tensor_idx<<"] @ file pos : " << tensor_pos << std::endl;
+if(VERBOSE){ std::cout << "# tensor["<<tensor_idx<<"] @ file pos : " << tensor_pos << std::endl; }
 			fseek(file, tensors_index_pos, SEEK_SET); // get file position of tensor
 			fwrite(&tensor_pos, sizeof(long int), 1, file); // write it in the index
 			tensors_index_pos += sizeof(long int);

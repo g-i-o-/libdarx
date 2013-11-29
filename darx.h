@@ -21,6 +21,8 @@
  * darx : data archive
  */
 namespace darx{
+	// whether this librsary outputs any diagnostic messages while reading/writting the darx file or not.
+	extern int VERBOSE;
 	
 	/** Describes the available types and sizes of pixels in an image.
 	 *  Each type has an associated size and data structure.
